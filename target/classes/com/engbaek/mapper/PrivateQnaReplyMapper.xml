@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.engbaek.mapper.PrivateQnaReplyMapper">
+  
+  
+   <select id="getList" 
+  		  resultType="com.engbaek.domain.PrivateQnaReplyVO">
+  	<![CDATA[
+  		SELECT * FROM privateQnaReply WHERE privateQnaReplyNo > 0
+  	]]>
+  </select>
+  
+  <!-- read -->
+	<select id="read" resultType="com.engbaek.domain.PrivateQnaReplyVO">
+		SELECT * FROM privateQnaReply WHERE privateQnaReplyNo = #{privateQnaReplyNo}
+	</select>
+  
+  
+     <!-- insert가 실행되고 생성된 PK값을 알아야 하는 경우 -->
+   <insert id="insertSelectKey">
+
+      <selectKey keyProperty="privateQnaReplyNo" order="BEFORE"
+         resultType="long">
+         SELECT privateQnaReply_seq.nextval FROM dual
+      </selectKey>
+
+      INSERT INTO privateQnaReply (privateQnaReplyNo,privateQnaNo,adminId,privateQnaReplyTitle,privateQnaReplyContent,privateQnaReplyRegdate)
+      VALUES (#{privateQnaReplyNo},#{privateQnaNo},#{adminId},#{privateQnaReplyTitle},#{privateQnaReplyContent},SYSDATE)
+   </insert>
+  
+   <update id="update">
+  	UPDATE privateQnaReply 
+  	SET 	 privateQnaReplyTitle=#{privateQnaReplyTitle},
+  			 privateQnaReplyContent= #{privateQnaReplyContent},
+  			privateQnaReplyRegdate= SYSDATE
+  	WHERE privateQnaReplyNo= #{privateQnaReplyNo}
+  </update>
+  
+  
+   <delete id="delete">
+  	DELETE FROM privateQnaReply WHERE privateQnaReplyNo=#{privateQnaReplyNo}
+  
+  </delete>
+  
+  </mapper>

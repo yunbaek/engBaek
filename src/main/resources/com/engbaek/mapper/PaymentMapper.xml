@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.engbaek.mapper.PaymentMapper">
+
+	<!-- 게시물 제목,작성자 검색처리 쿼리 -->
+	<sql id="criteria">
+
+		<trim prefix="(" suffix=") AND " prefixOverrides="OR">
+
+			<foreach item='type' collection="typeArr">
+
+				<trim prefix="OR">
+					<choose>
+						<when test="type == 'T'.toString()">
+							privateQnaTitle like '%' || #{keyword} || '%'
+						</when>
+
+						<when test="type == 'C'.toString()">
+							privateQnaContent like '%' || #{keyword} || '%'
+						</when>
+					</choose>
+
+				</trim>
+
+			</foreach>
+
+		</trim>
+	</sql>
+
+	<!-- 결제 내역 상세 조회 read -->
+	<select id="read" resultType="com.engbaek.domain.PaymentJoinVO">
+		SELECT * FROM payment WHERE
+		paymentNo = #{paymentNo}
+	</select>
+	<!-- 회원의 개강전인 결제 내역 출력 -->
+
+	<select id="getList"
+		resultType="com.engbaek.domain.PaymentJoinVO">
+  	<![CDATA[
+  		    
+    SELECT      paymentNo,
+  				courseCode,
+  				studentId,
+  				paymentMethod,
+  				paymentDate,
+  				paymentState,
+  				courseName,
+  				courseStart,
+  				courseEnd,
+  				price
+  		FROM (SELECT /*+INDEX_DESC((payment payment_pk)*/
+  					p.paymentNo,
+  					p.courseCode,
+  					p.studentId,
+  					p.paymentMethod,
+  					p.paymentDate,
+  					p.paymentState,
+  					c.courseName,
+  					c.courseStart,
+  					c.courseEnd,
+  					c.price
+  					FROM payment p, course c
+  					WHERE p.courseCode =c.courseCode AND c.courseStart >(SELECT TO_CHAR(SYSDATE, 'YY/MM/DD')FROM DUAL))
+  					
+  			WHERE paymentNo > 0
+  	]]>
+	</select>
+
+	<!-- 개강한 결제 내역 출력 취소 불가 -->
+
+	<select id="getList2"
+		resultType="com.engbaek.domain.PaymentJoinVO">
+  	<![CDATA[
+  	    
+    SELECT     paymentNo,
+  				courseCode,
+  				studentId,
+  				paymentMethod,
+  				paymentDate,
+  				paymentState,
+  				courseName,
+  				courseStart,
+  				courseEnd,
+  				price
+  		FROM (SELECT /*+INDEX_DESC((payment payment_pk)*/
+  					p.paymentNo,
+  					p.courseCode,
+  					p.studentId,
+  					p.paymentMethod,
+  					p.paymentDate,
+  					p.paymentState,
+  					c.courseName,
+  					c.courseStart,
+  					c.courseEnd,
+  					c.price
+  					FROM payment p, course c
+  					WHERE p.courseCode =c.courseCode AND c.courseStart <(SELECT TO_CHAR(SYSDATE, 'YY/MM/DD')FROM DUAL))
+  					
+  			WHERE paymentNo > 0
+  	]]>
+	</select>
+
+	<!-- 후기 등록 pk 값 몰라도될 경우 -->
+	<insert id="insert">
+		INSERT INTO
+		privateQna(privateQnaNo,courseCode,studentId,paymentMethod,paymentPrice,paymentDate,paymentState)
+		VALUES(payment_seq.nextval,#{courseCode},#{paymentMethod},#{paymentPrice},sysdate,#{paymentState})
+	</insert>
+
+	<!-- 수강신청을 하면 결제 내역에 추가 -->
+	<insert id="insertSelectKey">
+
+		<selectKey keyProperty="paymentNo" order="BEFORE"
+			resultType="long">
+			SELECT payment_seq.nextval FROM dual
+		</selectKey>
+		INSERT INTO
+		payment(paymentNo,courseCode,studentId,paymentMethod,paymentPrice,paymentDate,paymentState)
+		VALUES(#{paymentNo},#{courseCode},#{studentId},#{paymentMethod},#{paymentPrice},sysdate,#{paymentState})
+	</insert>
+
+
+	<delete id="delete">
+		DELETE FROM payment WHERE paymentNo=#{paymentNo}
+
+	</delete>
+
+	<update id="update">
+
+		UPDATE payment
+		SET paymentState=#{paymentState}
+		WHERE paymentNo=#{paymentNo}
+	</update>
+
+</mapper>
+  
+  

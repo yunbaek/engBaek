@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.engbaek.mapper.PrivateQnaMapper">
+  
+  <!-- 게시물 제목,작성자 검색처리 쿼리 -->
+<sql id ="criteria">
+
+  	<trim prefix="(" suffix=") AND " prefixOverrides="OR">
+  	
+  	<foreach item ='type' collection= "typeArr">
+  	
+  	<trim prefix ="OR">
+  	<choose>
+  		<when test ="type == 'T'.toString()">
+  			privateQnaTitle like '%' || #{keyword} || '%'
+  		</when>
+  		
+  		<when test ="type == 'C'.toString()">
+  			privateQnaContent like '%' || #{keyword} || '%'
+  		</when>
+  	</choose>
+  
+  	</trim>
+  	
+  	</foreach>
+  	
+  	</trim>
+</sql>
+  
+  <!-- read -->
+	<select id="read" resultType="com.engbaek.domain.PrivateQnaVO">
+		SELECT * FROM privateQna WHERE privateQnaNo = #{privateQnaNo}
+	</select>
+  
+  
+   <select id="getList" 
+  		  resultType="com.engbaek.domain.PrivateQnaVO">
+  	<![CDATA[
+  		SELECT * FROM privateQna WHERE privateQnaNo > 0
+  	]]>
+  </select>
+  
+  <!-- 후기 등록 pk 값 몰라도될 경우 -->
+  <insert id="insert">
+  	INSERT INTO privateQna(privateQnaNo,studentId,privateQnaTitle,privateQnaContent,privateQnaRegdate)
+  	VALUES(privateQna_seq.nextval,#{studentId},#{privateQnaTitle},#{privateQnaContent},sysdate)
+  </insert>
+  
+   <!-- insert가 실행되고 생성된 PK값을 알아야 하는 경우 -->
+   <insert id="insertSelectKey">
+
+      <selectKey keyProperty="privateQnaNo" order="BEFORE"
+         resultType="long">
+         SELECT privateQna_seq.nextval FROM dual
+      </selectKey>
+
+      INSERT INTO privateQna (privateQnaNo,studentId,privateQnaTitle,privateQnaContent,privateQnaRegdate)
+      VALUES (#{privateQnaNo},#{studentId},#{privateQnaTitle},#{privateQnaContent},SYSDATE)
+   </insert>
+  
+  
+  <!-- 후기 수정 제목,내용,(재)등록 시간만 바뀐다  -->
+  <update id="update">
+  	UPDATE privateQna 
+  	SET 	 privateQnaTitle=#{privateQnaTitle},
+  			 privateQnaContent= #{privateQnaContent},
+  			privateQnaRegdate= SYSDATE
+  	WHERE privateQnaNo= #{privateQnaNo}
+  </update>
+  
+  <delete id="delete">
+  	DELETE FROM privateQna WHERE privateQnaNo=#{privateQnaNo}
+  
+  </delete>
+  <!-- 게시물의 총 수량 카운트 -->
+  <select id ="getTotalCount" resultType="int">
+	SELECT COUNT(*) FROM privateQna WHERE
+	<!-- 보관해 둔 쿼리 사용 -->
+	<include refid="criteria"></include>
+	privateQnaNo > 0
+</select>
+  
+ <select id="getListWithPaging" 
+  		  resultType="com.engbaek.domain.PrivateQnaVO">
+  	<![CDATA[
+  		SELECT 
+  		privateQnaNo,studentId,privateQnaTitle,privateQnaContent,privateQnaRegdate
+  		FROM (SELECT /*+INDEX_DESC(privateQna p_Qna_board_pk) */
+  				rownum rn,privateQnaNo,studentId,privateQnaTitle,privateQnaContent,privateQnaRegdate
+  				FROM privateQna
+  				WHERE 
+  	
+  	]]> 
+  	
+  		<include refid="criteria"></include>
+  	
+  	<![CDATA[	 	rownum <= #{pageNum} * #{amount} 
+  	)
+  		WHERE rn > (#{pageNum}-1) * #{amount}
+  	]]>
+  </select>
+  </mapper>
+  
+  

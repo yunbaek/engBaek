@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.engbaek.mapper.InfoMapper">
+
+<resultMap type="com.engbaek.domain.StudentVO" id="studentMap">
+   <id property="studentId" column="studentId"/>
+   <result property="studentId" column="studentId"/>
+   <result property="name" column="name"/>
+   <result property="pw" column="pw"/>
+   <result property="birthday" column="birthday"/>
+   <result property="email1" column="email1"/>
+   <result property="email2" column="email2"/>
+   <result property="phone" column="phone"/>
+   <result property="address" column="address"/>
+   <result property="regdate" column="regdate"/>
+   <result property="authNo" column="authNo"/>      
+</resultMap>
+
+<resultMap type="com.engbaek.domain.TeacherVO" id="teacherMap">
+   <id property="teacherId" column="teacherId"/>
+   <result property="teacherId" column="teacherId"/>
+   <result property="name" column="name"/>
+   <result property="pw" column="pw"/>
+   <result property="birthday" column="birthday"/>
+   <result property="email1" column="email1"/>
+   <result property="email2" column="email2"/>
+   <result property="phone" column="phone"/>
+   <result property="address" column="address"/>
+   <result property="regdate" column="regdate"/>
+   <result property="career" column="career"/>
+   <result property="authNo" column="authNo"/>      
+</resultMap>
+
+<resultMap type="com.engbaek.domain.AdminVO" id="adminMap">
+   <id property="adminId" column="adminId"/>
+   <result property="adminId" column="adminId"/>
+   <result property="adminName" column="adminName"/>
+   <result property="authNo" column="authNo"/>
+</resultMap>
+
+<select id="getInfoStudent" resultMap="studentMap">
+   select * from student where studentId = #{studentId}
+</select>
+
+<select id="getInfoTeacher" resultMap="teacherMap">
+   select * from teacher where teacherId = #{teacherId}
+</select>
+
+<select id="getInfoAdmin" resultMap="adminMap">
+   select * from admin where adminId = #{adminId}
+</select>
+
+<delete id="deleteStudent">
+   delete student
+   where studentId = #{studentId}
+</delete>
+
+<update id="updateInfoStudent">
+   update student
+   set name = #{name},
+   pw = #{pw},
+   birthday = #{birthday},
+   email1 = #{email1},
+   email2 = #{email2},
+   phone = #{phone},
+   gender = #{gender},
+   address = #{address}
+   where studentId = #{studentId}
+</update>
+
+<update id="updateInfoTeacher">
+   update student
+   set name = #{name},
+   pw = #{pw},
+   birthday = #{birthday},
+   email1 = #{email1},
+   email2 = #{email2},
+   phone = #{phone},
+   gender = #{gender},
+   address = #{address},
+   career = #{career}
+   where teacherId = #{teacherId}
+</update>
+
+<update id="updateInfoAdmin">
+   update student
+   set adminname = #{adminname},
+   pw = #{pw}
+   where adminId = #{adminId}
+</update>
+
+</mapper>

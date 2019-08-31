@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.engbaek.mapper.ClassQnaCommentMapper">
+
+	<select id="getCountByNo" resultType="int">
+		SELECT COUNT(*) FROM classQnaComment WHERE classQnaNo = #{classQnaNo}
+	</select>
+	
+	<select id="read" resultType = "com.engbaek.domain.ClassQnaCommentVO">
+		SELECT * FROM classQnaComment WHERE commentNo = #{commentNo}
+	</select>
+	
+	<select id="getListWithPaging" resultType = "com.engbaek.domain.ClassQnaCommentVO">	
+	<!--
+		<![CDATA[
+		SELECT * FROM (SELECT /*+INDEX(classQnaComment c_qna_comment_pk)*/
+								rownum rn, courseCode, commentNo, studentId, teacherId, commentContent, commentRegdate, classQnaNo
+							    FROM classQnaComment WHERE classQnaNo = #{classQnaNo} 
+								AND commentNo > 0
+								AND rownum <= #{cri.pageNum} * #{cri.amount}
+					    )
+		WHERE rn > (#{cri.pageNum} -1) * #{cri.amount}
+		]]>  -->	
+		
+		SELECT * FROM ClassQnaComment WHERE classQnaNo = #{classQnaNo} ORDER BY commentNo
+	</select>
+	
+	
+	<insert id="insert">
+		INSERT INTO classQnaComment values(classQnaComment_seq.nextval,#{courseCode},'stu2','tc1', #{commentContent},SYSDATE,#{classQnaNo})
+	</insert>
+  	
+	<delete id="delete">
+		DELETE FROM classQnaComment WHERE commentNo = #{commentNo}
+	</delete>
+	
+	<update id="update">
+		UPDATE classQnaComment SET commentContent = #{commentContent}, commentRegdate = sysdate 
+		WHERE commentNo = #{commentNo}
+	</update>
+	
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">  
+ <mapper namespace="com.engbaek.mapper.MemberMapper">
+
+<resultMap type="com.engbaek.domain.MemberVO" id="memberMap">
+	<id property="userid" column="id"/>
+	<result property="userid" column="id"/>
+	<result property="userpw" column="pw"/>
+	<result property="username" column="name"/>
+	<collection property="authList" resultMap="authMap">
+	</collection>
+</resultMap> 
+
+<resultMap type="com.engbaek.domain.AuthVO" id="authMap">
+	<result property="userid" column="id"/>
+	<result property="auth" column="authno"/>
+</resultMap>
+
+<select id="read" resultMap="memberMap">
+select id, pw, name, authno
+from (select adminid id, pw, adminname as name, authno from admin
+	  union select studentid id, pw, name, authno from student
+	  union select teacherid id, pw, name, authno from teacher)
+where id=#{userid}
+</select>
+
+ </mapper>

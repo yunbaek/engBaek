@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.engbaek.mapper.ClassroomMapper">
+	
+	
+	<select id="getList" resultType="com.engbaek.domain.ClassroomVO">
+		select c.classroomNo, c.courseName, t.name, c.courseDay, c.courseTime, c.courseStart, c.courseEnd 
+		from course c join teacher t on t.teacherId = c.teacherId 
+		<if test='value != null and value != "" '>
+			where c.classroomNo = #{classroomNo}
+		</if>
+	</select>
+
+</mapper>

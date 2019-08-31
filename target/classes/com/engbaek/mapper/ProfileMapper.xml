@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.engbaek.mapper.ProfileMapper">
+
+	<select id="getList"
+		resultType="com.engbaek.domain.ProfileJoinVO">
+	<![CDATA[
+	SELECT
+		p.teacherPno
+		, t.teacherId
+		, p.teacherSubject
+		, p.teacherProfile
+		, t.name
+		, t.email1
+		, t.email2
+		, t.career
+		FROM profile p, teacher t
+		WHERE p.teacherId = t.teacherId
+		AND p.teacherPno > 0
+	]]>
+	</select>
+
+	<!-- 쿼리 보관 -->
+	<sql id="criteria">
+		<trim prefix="(" suffix=") AND " prefixOverrides="OR">
+			<foreach item='type' collection="typeArr">
+				<trim prefix="OR">
+					<choose>
+						<when test="type == 'A'.toString()">
+							upper(name) LIKE '%'||upper(#{keyword})||'%'
+						</when>
+						<when test="type == 'B'.toString()">
+							upper(name) LIKE '%'||upper(#{keyword})||'%'
+						</when>
+						<when test="type == 'C'.toString()">
+							upper(teacherSubject) LIKE
+							'%'||upper(#{keyword})||'%'
+						</when>
+					</choose>
+				</trim>
+			</foreach>
+		</trim>
+	</sql>
+	
+	<!-- 검색용 쿼리 보관 -->
+	<sql id="searchCriteria">
+		<trim prefix="(" suffix=") AND " prefixOverrides="OR">
+			<foreach item='type' collection="typeArr">
+				<trim prefix="OR">
+					<choose>
+						<when test="type == 'T'.toString()">
+							upper(t.name) LIKE '%'||upper(#{keyword})||'%'
+						</when>
+						<when test="type == 'C'.toString()">
+							upper(p.teacherSubject) LIKE
+							'%'||upper(#{keyword})||'%'
+						</when>
+					</choose>
+				</trim>
+			</foreach>
+		</trim>
+	</sql>
+
+	<select id="getListWithPaging"
+		resultType="com.engbaek.domain.ProfileJoinVO">
+		<![CDATA[
+			SELECT	teacherPno, teacherId, teacherSubject, teacherProfile, name, email1, email2, career,
+					uploadPath, teacherProfilePicture, teacherProfileUuid, fileType 
+ 			FROM	( SELECT /*+INDEX_DESC(profile teacher_profile_pk)*/
+ 					 rownum rn, p.teacherPno, t.teacherId, p.teacherSubject, p.teacherProfile, t.name, t.email1, t.email2, t.career,
+ 					 		pa.uploadPath, pa.teacherProfilePicture, pa.teacherProfileUuid, pa.fileType 
+ 					  FROM profile p, teacher t, profileAttach pa
+ 					  WHERE p.teacherId = t.teacherId
+ 					  AND p.teacherPno = pa.teacherPno
+ 					  AND
+ 		]]>
+
+		<include refid="criteria"></include>
+ 			
+ 		<![CDATA[
+ 			rownum <= #{pageNum} * #{amount}
+ 			)
+ 		WHERE rn > (#{pageNum} -1) * #{amount}	
+ 		]]>
+ 		
+	</select>
+
+	<!-- insert만 처리되고 생성된 PK값을 알 필요가 없는 경우 -->
+	<insert id="insert">
+		INSERT INTO profile (teacherPno, teacherId,
+		teacherSubject, teacherProfile)
+		VALUES (profile_seq.nextval, #{teacherId},
+		#{teacherSubject}, #{teacherProfile}
+	</insert>
+
+
+	<!-- insert가 실행되고 생성된 PK값을 알아야 하는 경우 -->
+	<insert id="insertSelectKey">
+
+		<selectKey keyProperty="teacherPno" order="BEFORE"
+			resultType="long">
+			SELECT profile_seq.nextval FROM dual
+		</selectKey>
+
+		INSERT INTO profile (teacherPno, teacherId, teacherSubject,
+		teacherProfile)
+		VALUES
+		(#{teacherPno}, #{teacherId}, #{teacherSubject},
+		#{teacherProfile})
+	</insert>
+
+	<!-- delete -->
+	<delete id="delete">
+		DELETE profile where teacherPno = #{teacherPno}
+	</delete>
+
+	<!-- update -->
+	<update id="update">
+		UPDATE profile
+		SET teacherId = #{teacherId},
+		teacherSubject = #{teacherSubject},
+		teacherProfile = #{teacherProfile}
+		WHERE teacherPno = #{teacherPno}
+	</update>
+
+	<!-- getTotalCount -->
+	<select id="getTotalCount" resultType="int">
+		SELECT COUNT(*) FROM profile p, teacher t 
+		WHERE  p.teacherId = t.teacherId
+		AND 
+
+		<include refid="searchCriteria"></include>
+
+		p.teacherPno > 0
+	</select>
+
+	<resultMap type="com.engbaek.domain.ProfileVO"
+		id="profileMap">
+		<id column="teacherPno" property="teacherPno" />
+		<result column="teacherSubject" property="teacherSubject" />
+		<result column="teacherProfile" property="teacherProfile" />
+
+		<!-- 1 : 다 관계의 경우 데이터 매핑시켜준다. association => 1 : 1 관계 collection => 1 : 
+			다 관계 (한명의 유저가 작성한 글 목록) 일반 컬럼과 pk 구분 가능 pk 칼럼에게는 result 아닌 id 사용 -->
+		<association javaType="com.engbaek.domain.TeacherVO"
+			property="teacherVO">
+			<id column="teacherId" property="teacherId" />
+			<result column="name" property="name" />
+			<result column="email1" property="email1" />
+			<result column="email2" property="email2" />
+			<result column="phone" property="phone" />
+			<result column="regdate" property="regdate" />
+			<result column="career" property="career" />
+		</association>
+	</resultMap>
+
+	<select id="selectOneProfile" resultMap="profileMap">
+		SELECT
+		p.teacherPno
+		, p.teacherSubject
+		, p.teacherProfile
+		, t.teacherId
+		, t.name
+		, t.email1
+		, t.email2
+		, t.phone
+		, t.regdate
+		, t.career
+		FROM profile p
+		, teacher t
+		WHERE p.teacherId =
+		t.teacherId
+		AND p.teacherPno = #{teacherPno}
+	</select>
+
+	<!-- read with resultMap -->
+	<resultMap type="com.engbaek.domain.ProfileVO"
+		id="profileMapList">
+		<id column="teacherPno" property="teacherPno" />
+		<result column="teacherSubject" property="teacherSubject" />
+		<result column="teacherProfile" property="teacherProfile" />
+
+		<!-- 1 : 다 관계의 경우 데이터 매핑시켜준다. association => 1 : 1 관계 collection => 1 : 
+			다 관계 (한명의 유저가 작성한 글 목록) 일반 컬럼과 pk 구분 가능 pk 칼럼에게는 result 아닌 id 사용 -->
+		<association javaType="com.engbaek.domain.TeacherVO"
+			property="teacherVO">
+			<id column="teacherId" property="teacherId" />
+			<result column="name" property="name" />
+			<result column="email1" property="email1" />
+			<result column="email2" property="email2" />
+			<result column="phone" property="phone" />
+			<result column="regdate" property="regdate" />
+			<result column="career" property="career" />
+		</association>
+	</resultMap>
+
+	<select id="selectProfileLists" resultMap="profileMapList">
+		SELECT
+		p.teacherPno
+		, p.teacherSubject
+		, p.teacherProfile
+		, t.teacherId
+		, t.name
+		, t.email1
+		, t.email2
+		, t.phone
+		, t.regdate
+		, t.career
+		FROM profile p
+		, teacher t
+		WHERE p.teacherId =
+		t.teacherId
+	</select>
+	
+	<select id="idCheck" parameterType="String" resultType="Integer">
+      SELECT COUNT(*) FROM teacher
+      WHERE
+      teacherId = #{teacherId}
+	</select>
+	
+	<select id="selectId" resultType="com.engbaek.domain.ProfileJoinVO">
+		SELECT t.teacherId, p.teacherPno, t.name
+		FROM profile p, teacher t
+		WHERE p.teacherId(+) = t.teacherId
+        AND p.teacherID IS NULL
+	</select>
+	
+	<select id="getListWithImage" resultType="com.engbaek.domain.ProfileAttachJoinVO">
+		select *
+		from profileAttach pa, profile p
+		where pa.teacherPno = p.teacherPno
+	</select>
+
+</mapper>   

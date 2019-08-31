@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+<bean id="customAccessDenied" class="com.engbaek.security.CustomAccessDeniedHandler"></bean>
+<bean id="customLoginSuccess" class="com.engbaek.security.CustomLoginSuccessHandler"></bean>
+<bean id="bcryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"></bean>
+<bean id="customPasswordEncoder" class="com.engbaek.security.CustomNoOpPasswordEncoder"></bean>
+<bean id="customUserDetailsService" class="com.engbaek.security.CustomUserDetailsService"></bean>
+
+<security:http auto-config="true" use-expressions="true">
+
+	<security:intercept-url pattern="/member/member" access="permitAll"/>
+	<security:intercept-url pattern="/member/student" access="hasRole('ROLE_S')"/>
+	<security:intercept-url pattern="/member/teacher" access="hasRole('ROLE_Y')"/>
+	<security:intercept-url pattern="/member/admin" access="hasRole('ROLE_A')"/>
+
+	<!-- 로그인 처리 -->
+	<security:form-login login-page="/member/customLogin" authentication-success-handler-ref="customLoginSuccess"/>
+	<security:csrf disabled="true"/>
+	
+	<!-- 접근권한 -->
+	<security:access-denied-handler ref="customAccessDenied"/>
+	
+	<!-- 로그아웃 -->
+	<security:logout logout-url="/member/customLogout" invalidate-session="true"/>
+	
+</security:http>
+
+<security:authentication-manager>
+	<security:authentication-provider user-service-ref="customUserDetailsService">
+
+		<!-- pw 인코더 -->
+		<!-- 더미값의 비밀번호가 인코딩이 안된 비밀번호라서 bcryptPasswordEncoder를 사용하면 로그인이 안되서 일부러 바꿔놨어요 -->
+ 		<!-- <security:password-encoder ref="bcryptPasswordEncoder"/> -->
+ 		<security:password-encoder ref="customPasswordEncoder"/>
+		
+	</security:authentication-provider>
+</security:authentication-manager>
+
+</beans>

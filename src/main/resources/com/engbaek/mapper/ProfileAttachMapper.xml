@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.engbaek.mapper.ProfileAttachMapper">
+	<insert id="insert">
+		INSERT INTO profileAttach (teacherPno, teacherProfilePicture, teacherProfileUuid, uploadPath, fileType)
+		VALUES (#{teacherPno}, #{teacherProfilePicture}, #{teacherProfileUuid}, #{uploadPath}, #{fileType})
+	</insert>
+	
+	<delete id="delete">
+		DELETE FROM profileAttach
+		WHERE teacherPno = #{teacherPno}
+	</delete>
+	
+	<select id="findByTeacherPno" resultType="com.engbaek.domain.ProfileAttachVO">
+		SELECT * FROM profileAttach
+		WHERE teacherPno = #{teacherPno}
+	</select>
+
+	<delete id="deleteAll">
+		DELETE profileAttach WHERE teacherPno = #{teacherPno}
+	</delete>
+</mapper>

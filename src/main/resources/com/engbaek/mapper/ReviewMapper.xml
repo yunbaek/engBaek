@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.engbaek.mapper.ReviewMapper">
+  
+  <!-- 게시물 제목,작성자 검색처리 쿼리 -->
+<sql id ="criteria">
+
+  	<trim prefix="(" suffix=") AND " prefixOverrides="OR">
+  	
+  	<foreach item ='type' collection= "typeArr">
+  	
+  	<trim prefix ="OR">
+  	<choose>
+  		<when test ="type == 'T'.toString()">
+  			reviewTitle like '%' || #{keyword} || '%'
+  		</when>
+  		
+  		<when test ="type == 'C'.toString()">
+  			reviewContent like '%' || #{keyword} || '%'
+		</when>
+  	</choose>
+  
+  	</trim>
+  	
+  	</foreach>
+  	
+  	</trim>
+</sql>
+  
+  <!-- read -->
+	<select id="read" resultType="com.engbaek.domain.ReviewJoinVO">
+		select r.reviewNo, r.teacherId,r.reviewTitle,r.reviewContent,r.studentId, r.reviewRegdate,c.courseName, t.name, c.courseCode,c.courseEnd
+		FROM course c join teacher t on t.teacherId = c.teacherId join review r on r.courseCode = c.coursecode
+		WHERE reviewNo =#{reviewNo}
+	</select>
+  
+  
+   <select id="getList" 
+  		  resultType="com.engbaek.domain.ReviewVO">
+  	<![CDATA[
+  		SELECT * FROM review WHERE reviewNo >0
+  	]]>
+  </select>
+  
+  <!-- 후기 등록 pk 값 몰라도될 경우 -->
+  <insert id="insert">
+  	INSERT INTO review(reviewNo, teacher_id,course_code,student_id,review_title,review_content,review_regdate)
+  	VALUES(review_seq.nextval, #{teacherId},#{courseCode},#{studentId},#{reviewTitle},#{reviewContent},sysdate)
+  </insert>
+  
+   <!-- insert가 실행되고 생성된 PK값을 알아야 하는 경우 -->
+   <insert id="insertSelectKey">
+
+      <selectKey keyProperty="reviewNo" order="BEFORE"
+         resultType="long">
+         SELECT review_seq.nextval FROM dual
+      </selectKey>
+
+      INSERT INTO review (reviewNo,teacherId,courseCode,studentId,reviewTitle,reviewContent,reviewRegdate)
+      VALUES (#{reviewNo}, #{teacherId}, #{courseCode}, #{studentId},#{reviewTitle},#{reviewContent},SYSDATE)
+   </insert>
+  
+  
+  <!-- 후기 수정 제목,내용,(재)등록 시간만 바뀐다  -->
+  <update id="update">
+  	UPDATE review 
+  	SET 	 reviewTitle=#{reviewTitle},
+  			 reviewContent= #{reviewContent},
+  			 reviewRegdate= SYSDATE
+  	WHERE reviewNo= #{reviewNo}
+  </update>
+  
+  <delete id="delete">
+  	DELETE FROM review WHERE reviewNo=#{reviewNo}
+  
+  </delete>
+  <!-- 게시물의 총 수량 카운트 -->
+  <select id ="getTotalCount" resultType="int">
+	SELECT COUNT(*) FROM review WHERE
+	<!-- 보관해 둔 쿼리 사용 -->
+	<include refid="criteria"></include>
+	 reviewNo > 0
+</select>
+  
+ <select id="getListWithPaging" 
+  		  resultType="com.engbaek.domain.ReviewJoinVO">
+  	<![CDATA[
+  		select rownum rn, teacherId,reviewTitle,reviewContent,studentId,reviewNO,
+                reviewRegdate,courseName,name,courseCode,courseEnd
+FROM( select  /*+INDEX_DESC(review review_pk)*/rownum rn, r.teacherId,r.reviewTitle,r.reviewContent,r.studentId,r.reviewNo,
+                r.reviewRegdate,c.courseName, t.name, c.courseCode,c.courseEnd
+from course c join teacher t 
+on t.teacherId = c.teacherId 
+join review r
+on r.courseCode = c.coursecode
+where reviewNo>0  AND
+  	]]>
+  	
+  		<include refid="criteria"></include>
+  	
+  	<![CDATA[	 rownum <= #{pageNum} * #{amount} 
+  	)
+  		WHERE rn > (#{pageNum}-1) * #{amount}
+  	]]>
+  </select>
+  
+  <!-- 강의중인 강좌 목록 -->
+	<select id="getReviewClassList" resultType="com.engbaek.domain.ReviewJoinVO">
+		select rownum, c.courseName, t.name, c.courseCode, c.courseStart
+			from course c join teacher t 
+			on t.teacherId = c.teacherId 
+            join coursehistory ch
+            on c.courseCode = ch.courseCode
+            where ch.studentId = 'stu1' and c.courseStart > (SELECT TO_CHAR(SYSDATE, 'YY/MM/DD')FROM DUAL)
+            <!-- 로그인할때 stu1 바꿔야 해 ~~~요 뭬롱 ㅎ힣 -->
+	</select>
+	
+	
+<select id="andCourse" resultType="com.engbaek.domain.CourseHistoryJoinVO">
+
+<![CDATA[
+    SELECT  *
+   FROM courseHistory ch, course c,teacher t
+   where ch.courseCode= c.courseCode AND t.teacherId=c.teacherId
+   AND c.courseEnd < (SELECT TO_CHAR(SYSDATE, 'YYYY-MM-DD')FROM DUAL)
+   ]]>
+</select>
+  </mapper>
+  
+  

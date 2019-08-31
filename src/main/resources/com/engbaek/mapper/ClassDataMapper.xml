@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+   <mapper namespace="com.engbaek.mapper.ClassDataMapper">
+   		
+   		<!-- 쿼리 보관 -->
+	<sql id="criteria">
+		<trim prefix="(" suffix=") AND " prefixOverrides="OR">
+			<foreach item='type' collection="typeArr">
+				<trim prefix="OR">
+					<choose>
+						<when test="type == 'T'.toString()">
+							title LIKE '%'||#{keyword}||'%'
+						</when>
+						<when test="type == 'C'.toString()">
+							content LIKE '%'||#{keyword}||'%'
+						</when>
+						<when test="type == 'W'.toString()">
+							writer LIKE '%'||#{keyword}||'%'
+						</when>
+					</choose>
+				</trim>
+			</foreach>
+		</trim>
+	</sql>
+	
+   		<select id="getList" resultType = "com.engbaek.domain.ClassDataVO">
+   			SELECT rownum, classDataTitle, t.name, classDataRegdate,cd.classDataNo,c.courseCode
+				FROM classData cd JOIN teacher t 
+				ON cd.teacherId = t.teacherId
+				JOIN course c 
+				ON cd.courseCode = c.courseCode
+				WHERE c.courseCode = #{courseCode}
+   		</select>
+   		
+   		<select id="getClassList" resultType = "com.engbaek.domain.ClassDataVO">
+   			<!-- 강의중인 강좌  -->
+			select rownum, c.courseName, t.name, c.courseCode, c.courseStart
+			from course c join teacher t 
+			on t.teacherId = c.teacherId 
+            where c.teacherId = 'tc3' <!-- 로그인계정으로 바꿔야함  -->
+   		</select>
+   		
+   		<select id="read" resultType="com.engbaek.domain.ClassDataVO">
+			select rownum, cd.classDataTitle, t.name, cd.classDataRegdate, cd.classDataContent, cd.classDataNo,cd.courseCode
+			FROM classData cd join teacher t on t.teacherId = cd.teacherId where cd.classDataNo = #{classDataNo}
+		</select> 
+		
+		<update id="update">
+			UPDATE classData SET 
+				classDataTitle = #{classDataTitle}, 
+				classDataContent = #{classDataContent},
+				classDataRegdate = SYSDATE
+				WHERE classDataNo = #{classDataNo}
+		</update>
+		
+		<insert id="insertSelectKey">
+			<selectKey keyProperty = "classDataNo" resultType="long" order="BEFORE">
+				SELECT classData_seq.nextval FROM dual
+			</selectKey>
+			INSERT INTO classData(classDataNo, courseCode, teacherId, classDataTitle, classDataContent, classDataRegdate)
+			VALUES(classData_seq.nextval, #{courseCode}, #{teacherId}, #{classDataTitle},#{classDataContent},SYSDATE)
+		</insert>
+		
+		<insert id="insert">
+			INSERT INTO classData(classDataNo, courseCode, teacherId, classDataTitle, classDataContent, classDataRegdate)
+			VALUES(classData_seq.nextval, #{courseCode}, #{teacherId}, #{classDataTitle},#{classDataContent},SYSDATE)
+		</insert>
+		
+		<delete id = "delete">
+			DELETE FROM classData WHERE classDataNo = #{classDataNo}
+		</delete>
+   </mapper>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+   
+<mapper namespace="com.engbaek.mapper.ClassStudentMapper">
+
+	<!-- 강의중인 강좌  -->
+	<select id="getStudentClassList" resultType="com.engbaek.domain.ClassStudentVO">
+		select rownum, c.courseName, t.name, c.courseCode, c.courseStart
+			from course c join teacher t 
+			on t.teacherId = c.teacherId 
+            where c.teacherId = 'tc3' <!-- 로그인계정으로 바꿔야함  -->
+	</select>
+	
+	<!-- 학생명단  -->
+	<select id="getStudentList" resultType="com.engbaek.domain.ClassStudentVO">
+	
+		SELECT rownum, s.name, s.gender, s.phone
+			FROM course c JOIN courseHistory h
+			ON c.courseCode = h.courseCode 
+			JOIN student s
+			ON h.studentId = s.studentId
+			WHERE c.courseCode = #{courseCode}
+			
+	</select>
+	
+</mapper>
