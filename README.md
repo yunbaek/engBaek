@@ -45,3 +45,8 @@ wbs<br>
 화면목록<br>
 
 https://docs.google.com/spreadsheets/d/1WUDwXEopuh0zK4112Fy-CRJVlJzj0EUwF9UMiT3psKA/edit?usp=sharing
+
+## 유스케이스 기술서
+-------------
+
+https://docs.google.com/presentation/d/1JGGN7RrOm3gRT3g0oevNcLXSjz3ev_IPg3SpdvGiatw/edit?usp=sharing
