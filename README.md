@@ -1,9 +1,8 @@
 # engBaek
 Spring Final Project
 
-0831 revert reset 이슈로 new repository 생성
-기존 repository
-https://github.com/bbaing4564/englishBaek
+0831 revert reset 이슈로 new repository 생성 <br>
+기존 repository : https://github.com/bbaing4564/englishBaek <br>
 
 ## Screenshots
 --------------------
