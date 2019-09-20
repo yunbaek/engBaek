@@ -31,3 +31,17 @@ Spring Final Project
   <img src="https://user-images.githubusercontent.com/48405220/65297158-d322c680-dba1-11e9-811c-2759dafe15ee.jpeg"><br>
 
 </div>
+
+
+## 기획서
+-------------
+화면 목록 설계<br>
+클래스 설계<br>
+개념ERD<br>
+논리 & 물리 ERD<br>
+테이블 & 패키지 목록<br>
+테이블 정의 <br>
+wbs<br>
+화면목록<br>
+
+https://docs.google.com/spreadsheets/d/1WUDwXEopuh0zK4112Fy-CRJVlJzj0EUwF9UMiT3psKA/edit?usp=sharing
